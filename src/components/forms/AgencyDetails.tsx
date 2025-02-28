@@ -122,7 +122,7 @@ const AgencyDetails = ({ data }: AgencyDetailsProps) => {
           },
         };
       }
-      // newUserData = await initUser({ role: "AGENCY_OWNER" });
+      newUserData = await initUser({ role: "AGENCY_OWNER" });
       if (!data?.id) {
         const response = await upsertAgency({
           id: data?.id ? data?.id : uuid4(),
@@ -435,7 +435,9 @@ const AgencyDetails = ({ data }: AgencyDetailsProps) => {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction>Continue</AlertDialogAction>
+                <AlertDialogAction onClick={() => handleDeleteAgency(data?.id)}>
+                  Continue
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

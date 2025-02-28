@@ -1,10 +1,8 @@
+import BlurPage from "@/components/global/BlurPage";
+import Infobar from "@/components/global/Infobar";
 import Sidebar from "@/components/sidebar";
 import Unauthorized from "@/components/Unauthorized";
-import {
-  getAllNotifications,
-  getAuthUserDetails,
-  verifyAndAcceptInvitation,
-} from "@/lib/queries";
+import { getAllNotifications, verifyAndAcceptInvitation } from "@/lib/queries";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import React from "react";
@@ -43,7 +41,12 @@ const layout = async ({ children }: Props) => {
   return (
     <div>
       <Sidebar id={agencyId} type="agency" />
-      <div className="md:pl-[300px]">{children}</div>
+      <div className="md:pl-[300px]">
+        <Infobar notifications={allNotis} role={user.privateMetadata.role} />
+        <div className="relative">
+          <BlurPage>{children}</BlurPage>
+        </div>
+      </div>
     </div>
   );
 };

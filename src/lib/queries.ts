@@ -3,7 +3,8 @@
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import db from "./db";
 import { redirect } from "next/navigation";
-import { Agency, Plan, User } from "@prisma/client";
+import { Agency, Plan, SubAccount, User } from "@prisma/client";
+import { v4 } from "uuid";
 
 export const getAuthUserDetails = async () => {
   const user = await currentUser();
@@ -304,6 +305,153 @@ export const getAllNotifications = async (agencyId: string) => {
       },
     });
     return notis;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+export const upsertSubAccount = async (
+  subAccountDetails: Partial<SubAccount>
+) => {
+  const agencyOwner = await db.user.findFirst({
+    where: {
+      Agency: {
+        id: subAccountDetails.agencyId,
+      },
+      role: "AGENCY_OWNER",
+    },
+  });
+  if (!agencyOwner) throw new Error("Your are not a agency owner.");
+  const permissionId = v4();
+  const response = await db.subAccount.upsert({
+    where: {
+      id: subAccountDetails.id,
+    },
+    update: subAccountDetails,
+    create: {
+      ...subAccountDetails,
+      permissions: {
+        create: {
+          access: true,
+          email: agencyOwner.email,
+          id: permissionId,
+        },
+        connect: {
+          id: permissionId,
+          subAccountId: subAccountDetails.id,
+        },
+      },
+      pipelines: {
+        create: [
+          {
+            name: "Lead Cycle",
+          },
+        ],
+      },
+      sidebarOptions: {
+        create: [
+          {
+            name: "Launchpad",
+            icon: "clipboardIcon",
+            link: `/subaccount/${subAccountDetails.id}/launchpad`,
+          },
+          {
+            name: "Settings",
+            icon: "settings",
+            link: `/subaccount/${subAccountDetails.id}/settings`,
+          },
+          {
+            name: "Funnels",
+            icon: "pipelines",
+            link: `/subaccount/${subAccountDetails.id}/funnels`,
+          },
+          {
+            name: "Media",
+            icon: "database",
+            link: `/subaccount/${subAccountDetails.id}/media`,
+          },
+          {
+            name: "Automations",
+            icon: "chip",
+            link: `/subaccount/${subAccountDetails.id}/automations`,
+          },
+          {
+            name: "Pipelines",
+            icon: "flag",
+            link: `/subaccount/${subAccountDetails.id}/pipelines`,
+          },
+          {
+            name: "Contacts",
+            icon: "person",
+            link: `/subaccount/${subAccountDetails.id}/contacts`,
+          },
+          {
+            name: "Dashboard",
+            icon: "category",
+            link: `/subaccount/${subAccountDetails.id}`,
+          },
+        ],
+      },
+    },
+  });
+  return response;
+};
+
+export const getUserPermissions = async (userId: string) => {
+  const response = await db.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      Permissions: {
+        include: {
+          subAccount: true,
+        },
+      },
+    },
+  });
+  return response;
+};
+
+export const updateUser = async (user: Partial<User>) => {
+  try {
+    const response = await db.user.update({
+      where: { email: user.email },
+      data: { ...user },
+    });
+
+    await clerkClient.users.updateUser(user.id, {
+      privateMetaData: {
+        role: user.role || "SUBACCOUNT_USER",
+      },
+    });
+    return response;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+export const updateUserPermission = async (
+  permissionId: string,
+  email: string,
+  subAccountId: string,
+  permission: boolean
+) => {
+  try {
+    const response = await db.permission.upsert({
+      where: {
+        id: permissionId,
+      },
+      update: {
+        access: permission,
+      },
+      create: {
+        access: permission,
+        email,
+        subAccountId,
+      },
+    });
+    return response;
   } catch (e) {
     console.log(e);
   }

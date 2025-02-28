@@ -11,8 +11,6 @@ import {
   Sheet,
   SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -21,17 +19,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 
 import {
   Command,
-  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
-  CommandShortcut,
 } from "@/components/ui/command";
 
 import { ChevronsUpDown, Compass, Menu, PlusCircle } from "lucide-react";
@@ -39,8 +35,11 @@ import clsx from "clsx";
 import { AspectRatio } from "../ui/aspect-ratio";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { CommandRoot } from "cmdk";
 import Link from "next/link";
+import { useModalContext } from "@/providers/ModalProvider";
+import CustomModal from "../global/CustomModal";
+import SubaccountDetails from "../forms/SubaccountDetails";
+import { icons } from "@/lib/constant";
 
 type Props = {
   defaultOpen?: boolean;
@@ -66,6 +65,7 @@ const MenuOptions = ({
     () => (defaultOpen ? { open: true } : {}),
     [defaultOpen]
   );
+  const { setOpen } = useModalContext();
 
   useEffect(() => {
     setIsMounted(true);
@@ -86,7 +86,7 @@ const MenuOptions = ({
           className={clsx(
             "bg-background/80 backdrop-blur-xl fixed top-0 border-r-[1px] p-6",
             { "hidden md:inline-block z-0 w-[300px] ": defaultOpen },
-            { "inline-block md:hidden z-[100px] w-full": !defaultOpen }
+            { "inline-block md:hidden z-[100] w-full": !defaultOpen }
           )}
         >
           <SheetTitle className="hidden"></SheetTitle>
@@ -108,7 +108,7 @@ const MenuOptions = ({
               >
                 <div className="flex items-center text-left gap-2">
                   <Compass />
-                  <div className="flex flex-col">
+                  <div className="flex flex-col ">
                     {details.name}
                     <span className="text-muted-foreground">
                       {details.address}
@@ -145,8 +145,10 @@ const MenuOptions = ({
                                 className="rounded-md w-full h-full object-cover"
                               />
                             </div>
-                            <div className="flex flex-col flex-1 items-start">
-                              {user?.Agency?.name}
+                            <div className="flex  flex-col flex-1 items-start">
+                              <span className="!text-black">
+                                {user?.Agency?.name}
+                              </span>
                               <span className="text-muted-foreground">
                                 {user?.Agency?.address}
                               </span>
@@ -167,7 +169,9 @@ const MenuOptions = ({
                                 />
                               </div>
                               <div className="flex flex-col flex-1">
-                                {user?.Agency?.name}
+                                <span className="text-black">
+                                  {user?.Agency?.name}
+                                </span>
                                 <span className="text-muted-foreground">
                                   {user?.Agency?.address}
                                 </span>
@@ -239,7 +243,19 @@ const MenuOptions = ({
                 </CommandList>
                 {(user?.role == "AGENCY_ADMIN" ||
                   user?.role == "AGENCY_OWNER") && (
-                  <Button>
+                  <Button
+                    onClick={() => {
+                      setOpen(
+                        <CustomModal
+                          title="Create A Subaccount"
+                          defaultOpen={false}
+                          subHeading="You can switch between your agency account and the subaccount from the sidebar."
+                        >
+                          <SubaccountDetails data={{}} />
+                        </CustomModal>
+                      );
+                    }}
+                  >
                     <PlusCircle size={16} />
                     Create Sub Account
                   </Button>
@@ -247,6 +263,44 @@ const MenuOptions = ({
               </Command>
             </PopoverContent>
           </Popover>
+          <p className="text-muted-foreground text-xs mb-2">Menu Links</p>
+          <Separator className="mb-4" />
+          <nav className="relative">
+            <Command className="bg-transparent overflow-visible">
+              <CommandInput
+                placeholder="search"
+                className="border-none !outline-none !ring-0"
+              />
+              <CommandList className="pb-4 overflow-visible">
+                <CommandEmpty>No results found.</CommandEmpty>
+                <CommandGroup heading="Menu" className="!overflow-visible">
+                  {sidebarOptions.map((option) => {
+                    let val;
+                    const result = icons.find(
+                      (icon) => icon.value == option.icon
+                    );
+                    if (result) {
+                      val = <result.path />;
+                    }
+                    return (
+                      <CommandItem
+                        key={option.id}
+                        className="md:w-[320px]  w-full"
+                      >
+                        <Link
+                          href={option.link}
+                          className="flex items-center gap-2 hover:bg-transparent rounded-md transition-all md:w-full w-[320px]"
+                        >
+                          {val}
+                          <span>{option.name}</span>
+                        </Link>
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </nav>
         </SheetContent>
       </Sheet>
     </div>
