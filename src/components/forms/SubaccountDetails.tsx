@@ -31,7 +31,10 @@ import { saveActivityLogsNotification, upsertSubAccount } from "@/lib/queries";
 import { useModalContext } from "@/providers/ModalProvider";
 
 type SubaccountDetailsProps = {
+  agencyDetails: Agency;
   data: Partial<Agency>;
+  userName: string;
+  userId: string;
 };
 
 const FormSchema = z.object({
@@ -52,7 +55,12 @@ const FormSchema = z.object({
   subAccountLogo: z.string().min(1),
 });
 
-const SubaccountDetails = ({ data }: SubaccountDetailsProps) => {
+const SubaccountDetails = ({
+  data,
+  agencyDetails,
+  userName,
+  userId,
+}: SubaccountDetailsProps) => {
   const form = useForm<z.infer<typeof FormSchema>>({
     mode: "onChange",
     resolver: zodResolver(FormSchema),
@@ -91,6 +99,7 @@ const SubaccountDetails = ({ data }: SubaccountDetailsProps) => {
         zipCode: values.zipCode,
         country: values.country,
         goal: 5,
+        agencyId: agencyDetails.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -98,13 +107,13 @@ const SubaccountDetails = ({ data }: SubaccountDetailsProps) => {
         throw new Error("Failed to create subaccount");
       }
       await saveActivityLogsNotification({
-        agencyId: data.id,
-        description: "Successfully created a subaccount",
+        agencyId: response.agencyId,
+        description: `${userName} updated subaccount | ${response.name}`,
         subAccountId: response.id,
       });
       toast({
-        title: "Agency Created",
-        description: "Your agency has been created successfully",
+        title: "Subaccount Created",
+        description: "Successfully save user account details",
       });
       setClose();
       router.refresh();

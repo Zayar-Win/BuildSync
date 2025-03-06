@@ -35,7 +35,6 @@ const layout = async ({ children }: Props) => {
   let allNotis: any[] = [];
 
   const notis = await getAllNotifications(agencyId);
-
   if (notis) allNotis = notis;
 
   return (

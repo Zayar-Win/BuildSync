@@ -321,6 +321,7 @@ export const upsertSubAccount = async (
       role: "AGENCY_OWNER",
     },
   });
+  console.log(subAccountDetails);
   if (!agencyOwner) throw new Error("Your are not a agency owner.");
   const permissionId = v4();
   const response = await db.subAccount.upsert({
@@ -449,6 +450,30 @@ export const updateUserPermission = async (
         access: permission,
         email,
         subAccountId,
+      },
+    });
+    return response;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+export const getSubAccountDetails = async (subAccountId: string) => {
+  try {
+    const subAccountDetails = await db.subAccount.findUnique({
+      where: { id: subAccountId },
+    });
+    return subAccountDetails;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+export const deleteSubAccount = async (subAccountId: string) => {
+  try {
+    const response = await db.subAccount.delete({
+      where: {
+        id: subAccountId,
       },
     });
     return response;

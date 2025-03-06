@@ -251,7 +251,11 @@ const MenuOptions = ({
                           defaultOpen={false}
                           subHeading="You can switch between your agency account and the subaccount from the sidebar."
                         >
-                          <SubaccountDetails data={{}} />
+                          <SubaccountDetails
+                            agencyDetails={user?.Agency as Agency}
+                            userName={user.name}
+                            data={{}}
+                          />
                         </CustomModal>
                       );
                     }}

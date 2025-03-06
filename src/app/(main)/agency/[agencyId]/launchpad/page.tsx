@@ -29,7 +29,7 @@ const page = async ({ params, searchParams }: Props) => {
   });
   if (!agencyDetail) return;
 
-  let allDetailsExist =
+  const allDetailsExist =
     agencyDetail?.address &&
     agencyDetail?.companyEmail &&
     agencyDetail?.name &&
