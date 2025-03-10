@@ -51,9 +51,9 @@ import { v4 } from "uuid";
 
 type props = {
   type: "agency" | "subaccount";
-  id: string;
+  id: string | null;
   subAccounts: SubAccount[];
-  userData: Partial<User>;
+  userData: Partial<User> | null;
 };
 
 const UserDetails = ({ type, id, subAccounts, userData }: props) => {
@@ -66,6 +66,7 @@ const UserDetails = ({ type, id, subAccounts, userData }: props) => {
     useState<AuthUserWithAgencySidebarOptionsSubAccounts | null>(null);
   const { toast } = useToast();
   const router = useRouter();
+  console.log(data);
 
   const onChangePermission = async (
     subAccountId: string,
@@ -300,7 +301,7 @@ const UserDetails = ({ type, id, subAccounts, userData }: props) => {
                         <SelectItem value="AGENCY_ADMIN">
                           Agency Admin
                         </SelectItem>
-                        {(userData.role == "AGENCY_OWNER" ||
+                        {(userData?.role == "AGENCY_OWNER" ||
                           data?.user?.role == "AGENCY_OWNER") && (
                           <SelectItem value="AGENCY_OWNER">
                             Agency Owner
@@ -326,7 +327,7 @@ const UserDetails = ({ type, id, subAccounts, userData }: props) => {
                 "Save user information"
               )}
             </Button>
-            {userData?.role == "AGENCY_OWNER" && (
+            {authUserData?.role == "AGENCY_OWNER" && (
               <div>
                 <Separator className="my-4" />
                 <FormLabel>User Permissions</FormLabel>
@@ -344,7 +345,7 @@ const UserDetails = ({ type, id, subAccounts, userData }: props) => {
                     return (
                       <div
                         key={subAccount.id}
-                        className="flex flex-col justify-between items-center rounded-lg border p-4"
+                        className="flex  justify-between items-center rounded-lg border p-4"
                       >
                         <div>
                           <p>{subAccount.name}</p>
